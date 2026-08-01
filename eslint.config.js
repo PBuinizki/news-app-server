@@ -1,7 +1,6 @@
 import js from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
 import jsdoc from "eslint-plugin-jsdoc";
-import nodePlugin from "eslint-plugin-node";
 import globals from "globals";
 
 export default [
@@ -10,7 +9,6 @@ export default [
     plugins: {
       import: importPlugin,
       jsdoc: jsdoc,
-      node: nodePlugin,
     },
   },
   {
@@ -35,7 +33,6 @@ export default [
       "jsdoc/check-param-names": "error",
       "jsdoc/check-tag-names": "error",
       "jsdoc/check-types": "warn",
-      "jsdoc/newline-after-description": "warn",
       "jsdoc/require-param": "error",
       "jsdoc/require-param-type": "error",
       "jsdoc/require-returns": "error",
@@ -52,12 +49,6 @@ export default [
           },
         },
       ],
-      "node/exports-style": ["error", "module.exports"],
-      "node/prefer-global/buffer": ["error", "always"],
-      "node/prefer-global/console": ["error", "always"],
-      "node/prefer-global/process": ["error", "always"],
-      "node/prefer-global/url-search-params": ["error", "always"],
-      "node/prefer-global/url": ["error", "always"],
       "import/order": [
         "error",
         {
@@ -92,6 +83,14 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/", "uploads/", "dist/", "coverage/", "*.log", ".DS_Store"],
+    ignores: [
+      "node_modules/",
+      "uploads/",
+      "dist/",
+      "coverage/",
+      "*.log",
+      ".DS_Store",
+      "eslint.config.js",
+    ],
   },
 ];
