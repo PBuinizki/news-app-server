@@ -1,0 +1,11 @@
+{
+  "name": "news-app-server",
+  "version": "1.0.0",
+  "description": "news app API server",
+  "type": "module",
+  "author": "P. Buinizki",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
