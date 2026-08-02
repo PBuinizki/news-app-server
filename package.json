@@ -9,7 +9,8 @@
     "dev": "nodemon",
     "lint": "eslint . --ext .js --fix",
     "format": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "clean-jsdoc-theme": "^5.1.1",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -31,6 +33,7 @@
     "eslint-plugin-promise": "^7.3.0",
     "globals": "^17.8.0",
     "husky": "^9.1.7",
+    "jsdoc": "^4.0.5",
     "lint-staged": "^17.3.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.9.6"
