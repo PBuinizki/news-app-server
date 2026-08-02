@@ -12,6 +12,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const { Server } = require('socket.io');
 
 const authRoutes = require('./routes/auth');
 const newsRoutes = require('./routes/news');
@@ -69,6 +70,35 @@ app.post('/api/upload', authMiddleware, upload.single('file'), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}` });
 });
 
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log('Новый пользователь подключен к увидомлениям');
+
+  /**
+   * Подписка на уведомления по ID новости
+   * @event subscribe-news
+   * @param {string} newsId - ID новости
+   */
+  socket.on('subscribe-news', (newsId) => {
+    socket.join(`news-${newsId}`);
+    console.log(`Пользователь ${socket.id} подписан на новость ${newsId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Пользователь отключен');
+  });
+});
+
 server.listen(PORT, () => {
   console.log(`Сервер запустился: http://localhost:${PORT}`);
+  console.log(`WebSocket: ws://localhost:${PORT}`);
 });

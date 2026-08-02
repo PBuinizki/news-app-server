@@ -6,6 +6,23 @@
 const News = require('../models/News');
 
 /**
+ * Отправляет уведомление всем подключенным клиентам через WebSocket.
+ *
+ * @param {object} io - Экземпляр Socket.io.
+ * @param {string} event - Название события (news-created, news-updated, etc.).
+ * @param {object} data - Данные уведомления.
+ */
+const emitNotification = (io, event, data) => {
+  if (!io) {
+    return;
+  }
+  io.emit(event, data);
+  if (data.newsId) {
+    io.to(`news-${data.newsId}`).emit(event, data);
+  }
+};
+
+/**
  * Создание новой статьи.
  * Отправляет уведомление всем клиентам.
  *
@@ -42,6 +59,17 @@ exports.create = async (req, res) => {
       authorId: req.userId,
     });
 
+    await news.populate('authorId', 'email');
+
+    const io = req.app.get('io');
+    emitNotification(io, 'news-created', {
+      newsId: news._id,
+      title: news.title,
+      message: `Опубликована новая статья: "${news.title}"`,
+      author: news.authorId.email,
+      timestamp: new Date().toISOString(),
+    });
+
     res.status(201).json(news);
   } catch (err) {
     console.error('Ошибка создания новости: ', err);
@@ -64,8 +92,33 @@ exports.getAll = async (req, res) => {
   try {
     const now = new Date();
 
-    await News.updateMany({ status: 'draft', publishAt: { $lte: now } }, { status: 'published' });
+    const result = await News.updateMany(
+      { status: 'draft', publishAt: { $lte: now } },
+      { status: 'published' }
+    );
 
+    if (result.modifiedCount > 0) {
+      const io = req.app.get('io');
+
+      const publishedNews = await News.find({
+        status: 'published',
+        updatedAt: { $gte: now },
+      })
+        .select('title _id')
+        .lean();
+
+      if (io && publishedNews.length > 0) {
+        const titles = publishedNews.map((n) => `"${n.title}"`).join(', ');
+
+        io.emit('news-auto-published', {
+          count: publishedNews.length,
+          titles: publishedNews.map((n) => n.title),
+          newsIds: publishedNews.map((n) => n._id),
+          message: `Опубликовано ${publishedNews.length} новых статей: ${titles}`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
     const news = await News.find({
       $or: [{ status: 'published' }, { status: 'draft', publishAt: { $gt: now } }],
     })
@@ -148,6 +201,8 @@ exports.update = async (req, res) => {
 
     const { title, content, images, files, quotes, publishAt, status } = req.body;
 
+    const oldTitle = news.title;
+
     if (title) {
       news.title = title;
     }
@@ -171,6 +226,17 @@ exports.update = async (req, res) => {
     }
 
     await news.save();
+    await news.populate('authorId', 'email');
+
+    const io = req.app.get('io');
+    emitNotification(io, 'news-updated', {
+      newsId: news._id,
+      title: news.title,
+      oldTitle,
+      message: `Обновлена статья: "${news.title}"`,
+      author: news.authorId.email,
+      timestamp: new Date().toISOString(),
+    });
 
     res.json(news);
   } catch (err) {
@@ -219,6 +285,14 @@ exports.remove = async (req, res) => {
     const deletedId = news._id;
 
     await news.deleteOne();
+
+    const io = req.app.get('io');
+    emitNotification(io, 'news-deleted', {
+      newsId: deletedId,
+      title: deletedTitle,
+      message: `Удалена статья: "${deletedTitle}"`,
+      timestamp: new Date().toISOString(),
+    });
 
     res.json({
       message: 'Новость успешно удалена',
@@ -277,6 +351,16 @@ exports.publish = async (req, res) => {
     news.status = 'published';
     news.publishAt = new Date();
     await news.save();
+    await news.populate('authorId', 'email');
+
+    const io = req.app.get('io');
+    emitNotification(io, 'news-published', {
+      newsId: news._id,
+      title: news.title,
+      message: `Статья опубликована: "${news.title}"`,
+      author: news.authorId.email,
+      timestamp: new Date().toISOString(),
+    });
 
     res.json({
       message: 'Статья успешно опубликована',
