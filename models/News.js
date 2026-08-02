@@ -59,4 +59,4 @@ const newsSchema = new mongoose.Schema(
 
 newsSchema.index({ status: 1, publishAt: 1 });
 
-module.exports = mongoose.model('News', newsSchema)
+module.exports = mongoose.model('News', newsSchema);
