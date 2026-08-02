@@ -68,3 +68,61 @@ exports.register = async (req, res) => {
         });
     }
 }
+
+/** 
+ * Вход пользовател и выдача JWT - токена
+ * 
+ * @route POST /api/auth/login
+ * @param { Object } req - Объект запроса
+ * @param { string } req.body.email - Email пользователя
+ * @param { string } req.body.password - Пароль пользователя
+ * @param { Object } res - Объект ответа
+ * @returns { Object } JSON с JWT-токеном и ID пользователя
+*/
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                error: 'Не все поля заполнены',
+                message: 'Email и пароль обязательны'
+            });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({
+                error: 'Неверный email или пароль',
+                message: 'Пользователь не найден'
+            });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({
+                error: 'Неверный email или пароль',
+                message: 'Неверный пароль'
+            });
+        }
+
+        const token = JWT.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            token,
+            userId: user._id,
+            email: user.email,
+            message: 'Вход выполнен успешно'
+        });
+    } catch (err) {
+        console.error('Ошибка входа: ', err);
+        res.status(500).json({
+            error: 'Внутренняя ошбка сервера',
+            message: err.message
+        })
+    }
+}
