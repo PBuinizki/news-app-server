@@ -1,19 +1,19 @@
-/** 
+/**
  * @fileoverview Роуты для управления новостями
  * @requires express
  * @requires middleware/auth
  * @requires controllers/newsController
-*/
+ */
 
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const {
-    create,
-    getAll,
-    getOne,
-    update,
-    remove,
-    publish
+  create,
+  getAll,
+  getOne,
+  update,
+  remove,
+  publish,
 } = require('../controllers/newsController');
 
 const router = express.Router();
