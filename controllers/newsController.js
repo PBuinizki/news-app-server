@@ -197,7 +197,7 @@ exports.update = async (req, res) => {
  * @param {object} res - Объект ответа
  * @returns {object} JSON с сообщением об удалении
  */
-exports.delete = async (req, res) => {
+exports.remove = async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
 
