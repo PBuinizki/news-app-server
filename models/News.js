@@ -1,11 +1,11 @@
-/** 
+/**
  * @fileoverview Модель новости
  * @requires mongoose
  */
 
 const mongoose = require('mongoose');
 
-/** 
+/**
  * Схема новости
  * @typedef {object} News
  * @property { string } title - Заголовок новости
@@ -20,41 +20,41 @@ const mongoose = require('mongoose');
  */
 
 const newsSchema = new mongoose.Schema(
-    {
-        title: {
-            type: String,
-            required: [true, 'Заголовок не может быть пустым!'],
-            trim: true,
-            maxlength: [200, 'Не больше 200 символов']
-        },
-        content: {
-            type: String,
-            required: [true, 'Не может быть пустой новости']
-        },
-        images: {
-            type: [String],
-            default: []
-        },
-        files: {
-            type: [String],
-            default: []
-        },
-        quotes: {
-            type: [String],
-            default: []
-        },
-        status: {
-            type: String,
-            enum: ['draft', 'published'],
-            default: 'draft'
-        },
-        authorId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        }
+  {
+    title: {
+      type: String,
+      required: [true, 'Заголовок не может быть пустым!'],
+      trim: true,
+      maxlength: [200, 'Не больше 200 символов'],
     },
-    { timestamps: true }
+    content: {
+      type: String,
+      required: [true, 'Не может быть пустой новости'],
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    files: {
+      type: [String],
+      default: [],
+    },
+    quotes: {
+      type: [String],
+      default: [],
+    },
+    status: {
+      type: String,
+      enum: ['draft', 'published'],
+      default: 'draft',
+    },
+    authorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  { timestamps: true }
 );
 
 newsSchema.index({ status: 1, publishAt: 1 });
