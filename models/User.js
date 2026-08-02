@@ -7,12 +7,12 @@ const mongoose = require('mongoose');
 
 /** 
  * Схема пользователя
- * @typedef { Object } User
+ * @typedef {object} User
  * @property { string } email - Уникальная электроная почта пользователя
  * @property { string } passwordHash - Хешированный пароль
  * @property { Date } createdAt - Дата создания
  * @property { Date } updatedAt - Дата обновления
-*/
+ */
 
 const userSchema = new mongoose.Schema(
     {

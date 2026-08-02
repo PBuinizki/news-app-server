@@ -1,7 +1,7 @@
 /** 
  * @fileoverview Middleware для JWT-токена
  * @requires jsonwebtoken
-*/
+ */
 
 const JWT = require('jsonwebtoken');
 
@@ -9,11 +9,11 @@ const JWT = require('jsonwebtoken');
  * Проверяет наличие и валидность JWT
  * При успешной проверке добавляет userId в объект запроса
  * 
- * @param { Object } req - Объект запроса
- * @param { Object } res - Объект ответа
- * @param { Function } next - Переход на следюущий middleware
- * @returns {void|Object} - Передает управление или возвращает ошибку 401
-*/
+ * @param {object} req - Объект запроса
+ * @param {object} res - Объект ответа
+ * @param {function} next - Переход на следюущий middleware
+ * @returns {void | object} - Передает управление или возвращает ошибку 401
+ */
 
 module.exports = (req, res, next) => {
     try {

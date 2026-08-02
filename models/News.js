@@ -1,13 +1,13 @@
 /** 
  * @fileoverview Модель новости
  * @requires mongoose
-*/
+ */
 
 const mongoose = require('mongoose');
 
 /** 
  * Схема новости
- * @typedef { Object } News
+ * @typedef {object} News
  * @property { string } title - Заголовок новости
  * @property { string } content - HTML-содеримое статьи
  * @property { string[] } images - Массив URL изображений
@@ -17,7 +17,7 @@ const mongoose = require('mongoose');
  * @property { ObjectId } authorId - Ссылка на пользователя-автора
  * @property { Date } createdAt - Дата создания
  * @property { Date } updatedAt - Дата обновления
-*/
+ */
 
 const newsSchema = new mongoose.Schema(
     {

@@ -1,7 +1,7 @@
 /** 
  * @fileoverview Контроллер для управления новостными статьями
  * @requires models/News
-*/
+ */
 
 const News = require('../models/News');
 
@@ -10,17 +10,17 @@ const News = require('../models/News');
  * Отправляет уведомление всем клиентам.
  *
  * @route POST /api/news
- * @param { Object } req - Объект запроса
- * @param { Object } req.body - Данные новости
+ * @param {object} req - Объект запроса
+ * @param {object} req.body - Данные новости
  * @param { string } req.body.title - Заголовок
  * @param { string } req.body.content - HTML-содержимое
  * @param { string[] } req.body.images - Массив URL картинок
  * @param { string[] } req.body.files - Массив URL файлов
  * @param { string[] } req.body.quotes - Массив цитат
  * @param { string } req.body.publishAt - Дата публикации
- * @param { Object } res - Объект ответа
- * @returns { Object } JSON с созданной новостью
-*/
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с созданной новостью
+ */
 exports.create = async (req, res) => {
     try {
         const { title, content, images, files, quotes, publishAt } = req.body;
@@ -56,9 +56,9 @@ exports.create = async (req, res) => {
  * Получение всех статей с автоматической публикацией отложенных
  *
  * @route GET /api/news
- * @param { Object } req - Объект запроса
- * @param { Object } res - Объект ответа
- * @returns { Object[] } Массив статей
+ * @param {object} req - Объект запроса
+ * @param {object} res - Объект ответа
+ * @returns {object[]} Массив статей
  */
 exports.getAll = async (req, res) => {
     try {
@@ -79,8 +79,8 @@ exports.getAll = async (req, res) => {
     } catch (err) {
         console.error('Ошибка получения новостей:', err);
         res.status(500).json({
-        error: 'Внутренняя ошибка сервера',
-        message: err.message,
+            error: 'Внутренняя ошибка сервера',
+            message: err.message,
         });
     }
 }

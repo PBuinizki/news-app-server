@@ -4,7 +4,7 @@
  * @requires bcrypt
  * @requires jsonwebtoken
  * @requires utils/passwordValidator
-*/
+ */
 
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
@@ -15,12 +15,12 @@ const { validatePassword } = require('../utils/passwordValidator');
  * Регистрация нового пользователя
  * 
  * @route POST /api/auth/register
- * @param { Object } req - Объект запроса
+ * @param {object} req - Объект запроса
  * @param { string } req.body.email - Email пользователя
  * @param { string } req.body.password - Пароль пользователя
- * @param { Object } res - Объект ответа
- * @returns { Object } JSON c ID созданного пользователя
-*/
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON c ID созданного пользователя
+ */
 
 exports.register = async (req, res) => {
     try {
@@ -73,12 +73,12 @@ exports.register = async (req, res) => {
  * Вход пользовател и выдача JWT - токена
  * 
  * @route POST /api/auth/login
- * @param { Object } req - Объект запроса
+ * @param {object} req - Объект запроса
  * @param { string } req.body.email - Email пользователя
  * @param { string } req.body.password - Пароль пользователя
- * @param { Object } res - Объект ответа
- * @returns { Object } JSON с JWT-токеном и ID пользователя
-*/
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с JWT-токеном и ID пользователя
+ */
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;

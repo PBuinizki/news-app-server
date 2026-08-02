@@ -33,7 +33,7 @@ const COMMON_PASSWORDS = [
  * Проверяет пароль на соответствие современным требованиям безопасности.
  *
  * @param {string} password - Проверяемый пароль.
- * @returns {Object} Результат проверки.
+ * @returns {object} Результат проверки.
  * @property {boolean} isValid - Прошел ли пароль проверку.
  * @property {string[]} errors - Массив сообщений об ошибках (если есть).
  */
@@ -67,7 +67,7 @@ const validatePassword = (password) => {
   }
 
   // 6. Проверка на спецсимволы
-  const specialChars = /[!@#$%^&*()_+\-=\[\]{};:'"\\|,.<>\/?]/;
+  const specialChars = /[!@#$%^&*()_+\-=[\]{};:'"\\|,.<>/?]/;
   if (!specialChars.test(password)) {
     errors.push(
       'Пароль должен содержать хотя бы один специальный символ (!@#$%^&* и т.д.)'

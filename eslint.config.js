@@ -49,20 +49,6 @@ export default [
           },
         },
       ],
-      "import/order": [
-        "error",
-        {
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-          ],
-          "newlines-between": "always",
-        },
-      ],
       "import/no-duplicates": "error",
       "import/no-unresolved": "off",
     },
@@ -70,6 +56,10 @@ export default [
       jsdoc: {
         tagNamePreference: {
           returns: "returns",
+            route: 'route',
+            fileoverview: 'fileoverview',
+            version: 'version',
+            author: 'author',
         },
         preferredTypes: {
           Object: "object",
