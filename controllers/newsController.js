@@ -192,10 +192,10 @@ exports.update = async (req, res) => {
  * Удаление статьи
  *
  * @route DELETE /api/news/:id
- * @param {Object} req - Объект запроса
+ * @param {object} req - Объект запроса
  * @param {string} req.params.id - ID новости
- * @param {Object} res - Объект ответа
- * @returns {Object} JSON с сообщением об удалении
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с сообщением об удалении
  */
 exports.delete = async (req, res) => {
   try {
@@ -233,6 +233,63 @@ exports.delete = async (req, res) => {
       });
     }
     console.error('Ошибка удаления новости: ', err);
+    res.status(500).json({
+      error: 'Внутренняя ошибка сервера',
+      message: err.message,
+    });
+  }
+};
+
+/**
+ * Публикация статьи
+ *
+ * @route PATCH /api/news/:id/publish
+ * @param {object} req - Объект запроса
+ * @param {string} req.params.id - ID новости
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с опубликованной статьей
+ */
+exports.publish = async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+
+    if (!news) {
+      return res.status(404).json({
+        error: 'Новость не найдена',
+        message: `Статья с ID ${req.params.id} не существует`,
+      });
+    }
+
+    if (news.authorId.toString() !== req.userId) {
+      return res.status(403).json({
+        error: 'Недостаточно прав',
+        message: 'Вы не являетесь автором этой статьи',
+      });
+    }
+
+    if (news.status === 'published') {
+      return res.status(400).json({
+        error: 'Статья уже опубликована',
+        message: 'Эта статья уже имеет статус "опубликована"',
+      });
+    }
+
+    news.status = 'published';
+    news.publishAt = new Date();
+    await news.save();
+
+    res.json({
+      message: 'Статья успешно опубликована',
+      news,
+    });
+  } catch (err) {
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Неверный ID',
+        message: 'ID должен быть строкой в формате ObjectId',
+      });
+    }
+    console.error('Ошибка публикации новости: ', err);
     res.status(500).json({
       error: 'Внутренняя ошибка сервера',
       message: err.message,
