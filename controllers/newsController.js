@@ -51,3 +51,36 @@ exports.create = async (req, res) => {
         });
     }
 };
+
+/**
+ * Получение всех статей с автоматической публикацией отложенных
+ *
+ * @route GET /api/news
+ * @param { Object } req - Объект запроса
+ * @param { Object } res - Объект ответа
+ * @returns { Object[] } Массив статей
+ */
+exports.getAll = async (req, res) => {
+    try {
+        const now = new Date();
+
+        await News.updateMany(
+            { status: 'draft', publishAt: { $lte: now } },
+            { status: 'published' }
+        );
+
+        const news = await News.find({
+            $or: [{ status: 'published' }, { status: 'draft', publishAt: { $gt: now } }]    
+        })
+          .populate('authorId', 'email')
+          .sort({ createdAt: -1 });
+
+        res.json(news);
+    } catch (err) {
+        console.error('Ошибка получения новостей:', err);
+        res.status(500).json({
+        error: 'Внутренняя ошибка сервера',
+        message: err.message,
+        });
+    }
+}
