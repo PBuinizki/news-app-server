@@ -81,3 +81,109 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
+/**
+ * Получение одной статьи по ID
+ *
+ * @route GET /api/news/:id
+ * @param {object} req - Объект запроса
+ * @param {string} req.params.id - ID новости
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с найденной статьей
+ */
+exports.getOne = async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id).populate('authorId', 'email');
+
+    if (!news) {
+      return res.status(404).json({
+        error: 'Новость не найдена',
+        message: `Статья с ID ${req.params.id} не существует`,
+      });
+    }
+
+    res.json(news);
+  } catch (err) {
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Неверный ID',
+        message: 'ID должен быть строкой в формате ObjectId',
+      });
+    }
+    console.error('Ошибка получения новости:', err);
+    res.status(500).json({
+      error: 'Внутренняя ошибка сервера',
+      message: err.message,
+    });
+  }
+};
+
+/**
+ * Обновление статьи
+ *
+ * @route PUT /api/news/:id
+ * @param {object} req - Объект запроса
+ * @param {string} req.params.id - ID новости
+ * @param {object} req.body - Обновленные данные
+ * @param {object} res - Объект ответа
+ * @returns {object} JSON с обновленной статьей
+ */
+exports.update = async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+
+    if (!news) {
+      return res.status(404).json({
+        error: 'Новость не найдена',
+        message: `Статья с ID ${req.params.id} не существует`,
+      });
+    }
+
+    if (news.authorId.toString() !== req.userId) {
+      return res.status(403).json({
+        error: 'Недостаточно прав',
+        message: 'Вы не являетесь автором этой статьи',
+      });
+    }
+
+    const { title, content, images, files, quotes, publishAt, status } = req.body;
+
+    if (title) {
+      news.title = title;
+    }
+    if (content) {
+      news.content = content;
+    }
+    if (images) {
+      news.images = images;
+    }
+    if (files) {
+      news.files = files;
+    }
+    if (quotes) {
+      news.quotes = quotes;
+    }
+    if (publishAt !== undefined) {
+      news.publishAt = publishAt;
+    }
+    if (status) {
+      news.status = status;
+    }
+
+    await news.save();
+
+    res.json(news);
+  } catch (err) {
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Неверный ID',
+        message: 'ID должен быть строкой в формате ObjectId',
+      });
+    }
+    console.error('Ошибка обновления новости: ', err);
+    res.status(500).json({
+      error: 'Внутренняя ошибка сервера',
+      message: err.message,
+    });
+  }
+};
