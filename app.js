@@ -9,10 +9,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const authRoutes = require('./routes/auth');
 const newsRoutes = require('./routes/news');
@@ -27,31 +27,35 @@ mongoose
   .then(() => console.log('Подключился к Atlas!'))
   .catch((err) => console.error('Не получилось подключиться к Atlas: ', err));
 
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
-
-app.use(cors({
-  origin: [
-    'https://news-app-frontend-three.vercel.app',
-    'http://localhost:5173',
-    process.env.CLIENT_URL,
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  cors({
+    origin: [
+      'https://news-app-frontend-three.vercel.app',
+      'http://localhost:5173',
+      process.env.CLIENT_URL,
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/news', newsRoutes);
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'news-app', // Папка в Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+    resource_type: 'auto',
   },
 });
 

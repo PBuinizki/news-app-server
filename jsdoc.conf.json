@@ -1,13 +1,6 @@
 {
   "source": {
-    "include": [
-      "app.js",
-      "controllers/",
-      "models/",
-      "middleware/",
-      "routes/",
-      "utils/"
-    ],
+    "include": ["app.js", "controllers/", "models/", "middleware/", "routes/", "utils/"],
     "includePattern": ".+\\.js$",
     "excludePattern": "node_modules|uploads"
   },
@@ -16,9 +9,7 @@
     "recurse": true,
     "readme": "./README.md"
   },
-  "plugins": [
-    "plugins/markdown"
-  ],
+  "plugins": ["plugins/markdown"],
   "templates": {
     "cleverLinks": false,
     "monospaceLinks": false,
