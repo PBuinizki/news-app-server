@@ -49,26 +49,41 @@ exports.create = async (req, res) => {
       });
     }
 
+    let status = 'draft';
+    let publishDate = publishAt || null;
+
+    if (publishDate && new Date(publishDate) <= new Date()) {
+      status = 'published';
+      publishDate = new Date();
+    }
+
     const news = await News.create({
       title,
       content,
       images: images || [],
       files: files || [],
       quotes: quotes || [],
-      publishAt: publishAt || null,
+      publishAt: publishDate,
+      status,
       authorId: req.userId,
     });
 
     await news.populate('authorId', 'email');
 
     const io = req.app.get('io');
-    emitNotification(io, 'news-created', {
-      newsId: news._id,
-      title: news.title,
-      message: `Опубликована новая статья: "${news.title}"`,
-      author: news.authorId.email,
-      timestamp: new Date().toISOString(),
-    });
+    if (io) {
+      const event = status === 'published' ? 'news-published' : 'news-created';
+      emitNotification(io, event, {
+        newsId: news._id,
+        title: news.title,
+        message:
+          status === 'published'
+            ? `Опубликована статья: "${news.title}"`
+            : `Создан черновик: "${news.title}"`,
+        author: news.authorId.email,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     res.status(201).json(news);
   } catch (err) {
@@ -91,6 +106,7 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const now = new Date();
+    const userId = req.userId;
 
     const result = await News.updateMany(
       { status: 'draft', publishAt: { $lte: now } },
@@ -99,28 +115,17 @@ exports.getAll = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       const io = req.app.get('io');
-
-      const publishedNews = await News.find({
-        status: 'published',
-        updatedAt: { $gte: now },
-      })
-        .select('title _id')
-        .lean();
-
-      if (io && publishedNews.length > 0) {
-        const titles = publishedNews.map((n) => `"${n.title}"`).join(', ');
-
-        io.emit('news-auto-published', {
-          count: publishedNews.length,
-          titles: publishedNews.map((n) => n.title),
-          newsIds: publishedNews.map((n) => n._id),
-          message: `Опубликовано ${publishedNews.length} новых статей: ${titles}`,
+      if (io) {
+        emitNotification(io, 'news-auto-published', {
+          count: result.modifiedCount,
+          message: `Опубликовано ${result.modifiedCount} статей`,
           timestamp: new Date().toISOString(),
         });
       }
     }
+
     const news = await News.find({
-      $or: [{ status: 'published' }, { status: 'draft', publishAt: { $gt: now } }],
+      $or: [{ status: 'published' }, { status: 'draft', authorId: userId }],
     })
       .populate('authorId', 'email')
       .sort({ createdAt: -1 });
@@ -153,6 +158,21 @@ exports.getOne = async (req, res) => {
         error: 'Новость не найдена',
         message: `Статья с ID ${req.params.id} не существует`,
       });
+    }
+
+    if (news.status === 'draft' && news.publishAt && news.publishAt <= new Date()) {
+      news.status = 'published';
+      await news.save();
+
+      const io = req.app.get('io');
+      if (io) {
+        emitNotification(io, 'news-published', {
+          newsId: news._id,
+          title: news.title,
+          message: `Опубликована статья: "${news.title}"`,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
 
     res.json(news);
@@ -200,6 +220,11 @@ exports.update = async (req, res) => {
     }
 
     const { title, content, images, files, quotes, publishAt, status } = req.body;
+
+    if (status === 'published') {
+      news.status = 'published';
+      news.publishAt = new Date();
+    }
 
     const oldTitle = news.title;
 
