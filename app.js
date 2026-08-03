@@ -4,6 +4,7 @@
  */
 
 require('dotenv').config();
+process.env.TZ = 'Europe/Moscow';
 
 const express = require('express');
 const mongoose = require('mongoose');
