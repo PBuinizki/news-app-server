@@ -22,10 +22,51 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+app.set('io', io);
+
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log('Подключился к Atlas!'))
-  .catch((err) => console.error('Не получилось подключиться к Atlas: ', err));
+  .then(() => {
+    console.log('MongoDB Atlas подключена');
+
+    const News = require('./models/News');
+
+    const checkScheduledNews = async () => {
+      try {
+        const now = new Date();
+        const result = await News.updateMany(
+          { status: 'draft', publishAt: { $lte: now } },
+          { status: 'published' }
+        );
+
+        if (result.modifiedCount > 0) {
+          console.log(`Опубликовано ${result.modifiedCount} отложенных статей`);
+          const io = app.get('io');
+          if (io) {
+            io.emit('news-auto-published', {
+              count: result.modifiedCount,
+              message: `Опубликовано ${result.modifiedCount} статей`,
+              timestamp: now.toISOString(),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Ошибка публикации:', err.message);
+      }
+    };
+
+    setInterval(checkScheduledNews, 30 * 1000);
+    console.log('Планировщик публикации запущен');
+  })
+  .catch((err) => console.error('Ошибка подключения к MongoDB:', err));
 
 app.use(
   cors({
@@ -75,18 +116,8 @@ app.post('/api/upload', authMiddleware, upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
   }
-  res.json({ url: `/uploads/${req.file.filename}` });
+  res.json({ url: req.file.path });
 });
-
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
-
-app.set('io', io);
 
 io.on('connection', (socket) => {
   console.log('Новый пользователь подключен к увидомлениям');
