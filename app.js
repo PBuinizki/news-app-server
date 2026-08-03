@@ -72,7 +72,6 @@ app.use(
   cors({
     origin: [
       'https://news-app-frontend-three.vercel.app',
-      'http://localhost:5173',
       process.env.CLIENT_URL,
     ],
     credentials: true,
