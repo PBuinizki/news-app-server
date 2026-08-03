@@ -53,6 +53,10 @@ const newsSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    publishAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
